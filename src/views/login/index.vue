@@ -23,21 +23,51 @@
     />
   </van-cell-group>
   <div class="login-btn-box">
-    <van-button class="login-btn" type="info">登录</van-button>
+    <van-button
+      class="login-btn"
+      type="info"
+      :loading="loginLoading"
+      loading-text="登录中..."
+      @click.prevent="handleLogin"
+      >登录</van-button>
   </div>
     </form>
   </div>
 </template>
 
 <script>
+import { login } from '@/api/user'
 export default {
   name: 'LoginIndex',
   data () {
     return {
       user: {
-        mobile: '',
-        code: ''
+        mobile: '15379867454',
+        code: '123456'
+      },
+      loginLoading: false // 控制登录按钮的 loginLoading 状态
+    }
+  },
+  methods: {
+    async handleLogin () {
+      this.loginLoading = true
+      try {
+        const data = await login(this.user)
+
+        this.$store.commit('setUser', data)
+
+        /**
+         * 这里先跳转到主页
+         * 真实的业务要处理成跳转到之前过来的页面
+         */
+        // this.$router.push({
+        //   name: 'home'
+        // })
+      } catch (err) {
+        console.log(err)
+        console.log('登录失败')
       }
+      this.loginLoading = false
     }
   }
 }
