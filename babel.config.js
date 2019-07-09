@@ -1,12 +1,13 @@
 module.exports = {
   presets: [
     '@vue/app'
-  ],
-  plugins: [
-    ['import', {
-      libraryName: 'vant',
-      libraryDirectory: 'es',
-      style: true
-    }, 'vant']
   ]
+  // 全局引入不要配置这个东西
+  // plugins: [
+  //   ['import', {
+  //     libraryName: 'vant',
+  //     libraryDirectory: 'es',
+  //     style: true
+  //   }, 'vant']
+  // ]
 }
