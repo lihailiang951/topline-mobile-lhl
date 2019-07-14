@@ -6,6 +6,10 @@
 
     <!-- 频道标签 -->
     <van-tabs class="channel-tabs" v-model="activeChannelIndex">
+      <!-- 这种元素不受作用域影响 -->
+      <div slot="nav-right" class="wap-nav">
+        <van-icon name="wap-nav" />
+      </div>
       <van-tab
         v-for="channelItem in channels"
         :key="channelItem.id"
@@ -213,14 +217,24 @@ export default {
 .channel-tabs {
   margin-bottom: 100px;
 }
+
 // /deep/ 的作用（深度作用选择器）
 // 参考文档：https://vue-loader.vuejs.org/zh/guide/scoped-css.html#%E6%B7%B1%E5%BA%A6%E4%BD%9C%E7%94%A8%E9%80%89%E6%8B%A9%E5%99%A8
 // 注意：你在页面上测量的是设备像素，我们的样式规则转换是基于 75 进行转换的，所以在这里写的时候都 * 2
+
 .channel-tabs /deep/ .van-tabs__wrap {
   position: fixed;
   top: 92px;
 }
 .channel-tabs /deep/ .van-tabs__content {
   margin-top: 92px;
+}
+.channel-tabs .wap-nav {
+  position: sticky;
+  right: 0;
+  display: flex;
+  align-items: center;
+  background: #fff;
+  opacity: .7;
 }
 </style>
