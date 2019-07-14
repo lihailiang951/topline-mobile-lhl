@@ -131,6 +131,7 @@ export default {
       //    但是引用类型除外
       //    即便是这样：也最好不要利用这个特点
       // 建议做法就是将数据传递给父组件，让组件自己去修改
+
       // this.userChannels.push(item)
 
       // 截取一个新的数组，操作这个数组，操作结束将结果传递给父组件，让父组件自己去修改
@@ -138,6 +139,16 @@ export default {
       const channels = this.userChannels.slice(0)
       channels.push(item)
       this.$emit('update:user-channels', channels)
+
+      const { user } = this.$store.state
+      // 如果已经登录，则请求添加用户频道
+      if (user) {
+      } else {
+        // 如果没有登录，则添加到本地存储
+        // 没有就创建，有的直接覆盖
+        // 注意：本地存储数据无法像 js 数据变量去修改，要想改变只能完全重写
+        window.localStorage.setItem('channels', JSON.stringify(channels))
+      }
     }
 
     // handleInput (e) {
