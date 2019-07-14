@@ -3,15 +3,15 @@
     v-model 是：
       v-bind:value="数据"
       v-on:input="数据 = $event"
-      lazy-render 关闭懒加载
+    lazy-render 关闭懒加载
    -->
   <van-popup
-    :value="show"
+    :value="value"
     @input="$emit('input', $event)"
     position="bottom"
-    get-container="body "
+    get-container="body"
     :style="{ height: '95%' }"
-    >
+  >
     <!-- 我的频道 -->
     <div class="channel">
       <div class="channel-head">
@@ -92,7 +92,7 @@ export default {
   },
   computed: {
     /**
-     * 该计算属性用于处理获取推荐数据(也就是不包括用户频道列表的其他所有频道列表)
+     * 该计算属性用于处理获取推荐数据（也就是不包含用户频道列表的其它所有频道列表）
      * 计算属性其实也拥有 watch 的功能，但它的作用是用于当数据改变之后重新计算返回一些数据供我们使用
      */
     recommendChannels () {
@@ -108,6 +108,17 @@ export default {
     async loadAllChannels () {
       try {
         const data = await getAllChannels()
+
+        // 将获取到的频道数据统一处理成我们需要的数据格式
+        data.channels.forEach(item => {
+          item.articles = [] // 频道的文章
+          item.timestamp = Date.now() // 用于下一页频道数据的时间戳
+          item.finished = false // 控制该频道上拉加载是否已加载完毕
+          item.upLoading = false // 控制该频道的下拉刷新 loading
+          item.pullRefreshLoading = false // 控制频道列表的下拉刷新状态
+          item.pullSuccessText = '' // 控制频道列表的下拉刷新成功提示文字
+        })
+
         this.allChannels = data.channels
       } catch (err) {
         console.log(err)
@@ -120,7 +131,6 @@ export default {
       //    但是引用类型除外
       //    即便是这样：也最好不要利用这个特点
       // 建议做法就是将数据传递给父组件，让组件自己去修改
-      this.userChannels.push(item)
       // this.userChannels.push(item)
 
       // 截取一个新的数组，操作这个数组，操作结束将结果传递给父组件，让父组件自己去修改
@@ -131,7 +141,7 @@ export default {
     }
 
     // handleInput (e) {
-    //   console.log('handleInput => s' e)
+    //   console.log('handleInput => s', e)
     //   this.$emit('input', e)
     // }
   }
@@ -139,40 +149,40 @@ export default {
 </script>
 
 <style lang="less" scoped>
-  .channel {
-    .channel-head {
-      display:flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-      padding: 10px;
-      .title {
-        font-size: 30px;
-        margin-right: 5px;
-      }
-      .desc {
-        font-size: 12px;
-      }
+.channel {
+  .channel-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 10px;
+    .title {
+      font-size: 30px;
+      margin-right: 5px;
     }
-    .channel-content {
-      .text {
-        font-size: 24px;
-      }
-      .active {
-        color: red;
-      }
-      .close-icon {
-        font-size: 40px;
-        position: absolute;
-        top: -5px;
-        right: -5px;
-        z-index: 999;
-        background-color: #fff;
-      }
-      .info {
-        display: flex;
-        align-items: center;
-      }
+    .desc {
+      font-size: 12px;
     }
   }
+  .channel-content {
+    .text {
+      font-size: 24px;
+    }
+    .active {
+      color: red;
+    }
+    .close-icon {
+      font-size: 40px;
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      z-index: 999;
+      background-color: #fff;
+    }
+    .info {
+      display: flex;
+      align-items: center;
+    }
+  }
+}
 </style>

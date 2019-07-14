@@ -1,13 +1,13 @@
+
 <template>
   <div>
     <!-- 头部 -->
     <van-nav-bar title="首页" fixed/>
     <!-- /头部 -->
-
     <!-- 频道标签 -->
     <van-tabs class="channel-tabs" v-model="activeChannelIndex">
       <!-- 这种元素不受作用域影响 -->
-      <div slot="nav-right" class="wap-nav">
+      <div slot="nav-right" class="wap-nav" @click="isChannelShow = true">
         <van-icon name="wap-nav" />
       </div>
       <van-tab
@@ -20,12 +20,12 @@
           isLoading 控制下拉的 loading 状态
           refresh 下拉之后触发的事件
          -->
-          <van-pull-refresh
-            v-model="channelItem.pullRefreshLoading"
-            @refresh="onRefresh"
-            :success-text="channelItem.pullSuccessText"
-            :success-duration="1000"
-          >
+        <van-pull-refresh
+          v-model="channelItem.pullRefreshLoading"
+          @refresh="onRefresh"
+          :success-text="channelItem.pullSuccessText"
+          :success-duration="1000"
+        >
           <!--
             loading 控制加载更多的 loading 状态
             finished 控制是否已加载结束
@@ -93,7 +93,8 @@ export default {
       list: [],
       loading: false,
       finished: false,
-      pullRefreshLoading: false
+      pullRefreshLoading: false,
+      isChannelShow: false // 控制频道面板的显示状态
     }
   },
   computed: {
@@ -104,14 +105,13 @@ export default {
   watch: {
     /**
      * 监视容器中的 user 的状态，只要 user 发生改变，那么就重新获取频道列表
-     * 注意：凡是能 this. 点出来的东西都可以被监视
+     * 注意：凡是能 this. 点儿出来的东西都可以被监视
      */
     async '$store.state.user' () {
       // console.log('user 改变了')
 
       // 重新加载频道数据
-      await this.loadChaanels()
-
+      await this.loadChannels()
       // 由于重新加载了频道数据，所以文章内容也都被清空了
       // 而且上拉加载更多的 onLoad 没有主动触发。
       // 我们这里可以手动的触发上拉加载更多的 onLoad
@@ -119,6 +119,8 @@ export default {
       // 注意：这里肯定是有别的东西影响了，没有自动调用 onLoad
 
       this.activeChannel.upLoading = true
+      // 正常的话上面设置 loading 之后，组件会自动去 onLoad
+      // 这里它没有自己 onLoad，那我们就自己手动的 onLoad 以下。
       this.onLoad()
     }
   },
@@ -170,24 +172,24 @@ export default {
     },
     async loadChannels () {
       let channels = []
-      // 得到频道数据
+      // 1. 得到频道数据
       const { user } = this.$store.state
-
-      // 如果已经登录，则请求用户频道列表
+      // 如果已登录，则请求用户频道列表
       if (user) {
         channels = (await getUserChannels()).channels
       } else {
         // 如果没有登录
-        // 判断是否本地存储的频道列表
+        // 判断是否有本地存储的频道列表
         const localChannels = JSON.parse(window.localStorage.getItem('channels'))
         // 如果有，则使用
         if (localChannels) {
           channels = localChannels
         } else {
+          // 如果没有，则请求获取推荐的默认频道列表
           channels = (await getUserChannels()).channels
         }
       }
-      // 扩展频道数据满足其它业务需求
+      // 2. 扩展频道数据满足其他业务需求
       channels.forEach(item => {
         item.articles = [] // 频道的文章
         item.timestamp = Date.now() // 用于下一页频道数据的时间戳
@@ -198,6 +200,30 @@ export default {
       })
       this.channels = channels
     },
+    // async loadChannels () {
+    //   try {
+    //     let channels = []
+    //     const localChannels = window.localStorage.getItem('channels')
+    //     // 如果有本地存储的频道列表，则使用本地的
+    //     if (localChannels) {
+    //       channels = localChannels
+    //     } else {
+    //       channels = (await getUserChannels()).channels
+    //     }
+    //     // 对频道中的数据统一处理以供页面使用
+    //     channels.forEach(item => {
+    //       item.articles = [] // 频道的文章
+    //       item.timestamp = Date.now() // 用于下一页频道数据的时间戳
+    //       item.finished = false // 控制该频道上拉加载是否已加载完毕
+    //       item.upLoading = false // 控制该频道的下拉刷新 loading
+    //       item.pullRefreshLoading = false // 控制频道列表的下拉刷新状态
+    //       item.pullSuccessText = '' // 控制频道列表的下拉刷新成功提示文字
+    //     })
+    //     this.channels = channels
+    //   } catch (err) {
+    //     console.log(err)
+    //   }
+    // },
     async loadArticles () {
       // 频道、时间戳
       const { id: channelId, timestamp } = this.activeChannel

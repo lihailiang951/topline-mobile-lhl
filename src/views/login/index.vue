@@ -19,6 +19,8 @@
 
     <van-field
       v-model="user.code"
+      required
+      clearable
       type="password"
       label="密码"
       placeholder="请输入密码"
